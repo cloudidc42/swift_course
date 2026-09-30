@@ -1,8 +1,6 @@
 # Part 74: UIKit Essentials — พื้นฐาน UIKit สำหรับ iOS Development
 
-## บทนำ
-
-UIKit เป็น framework หลักสำหรับสร้าง User Interface บน iOS มาตั้งแต่ปี 2008 แม้ว่า SwiftUI จะเปิดตัวในปี 2019 แต่ UIKit ยังคงมีบทบาทสำคัญในหลายโปรเจกต์ บทนี้จะครอบคลุมแนวคิดหลักและ API ที่ใช้งานบ่อยที่สุดใน UIKit
+UIKit เป็น framework หลักสำหรับสร้าง User Interface บน iOS มาตั้งแต่ปี 2008 แม้ว่า SwiftUI จะเปิดตัวในปี 2019 แต่ UIKit ยังคงมีบทบาทสำคัญในหลายโปรเจกต์ บทนี้ครอบคลุมแนวคิดหลักและ API ที่ใช้บ่อยที่สุดใน UIKit
 
 ---
 
@@ -115,19 +113,6 @@ class LifecycleViewController: UIViewController {
         // เหมาะสำหรับ: stop timers, release resources
     }
 
-    // MARK: - Layout
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        // เรียกทุกครั้งที่ layout เปลี่ยน (rotation, keyboard, etc.)
-        print("📐 viewDidLayoutSubviews — layout อัปเดต")
-    }
-
-    // MARK: - Memory Warning
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        print("⚠️ didReceiveMemoryWarning — ควร release cache")
-    }
-
     // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = .systemBackground
@@ -154,13 +139,7 @@ class LifecycleViewController: UIViewController {
 
 ## 3. UIView และ Auto Layout
 
-### Auto Layout Anchor API
-
-Auto Layout ใช้ constraint เพื่อกำหนดตำแหน่งและขนาดของ view โดยไม่ต้องกำหนด frame โดยตรง
-
-### UIStackView สำหรับ Layout ง่ายๆ
-
-UIStackView จัด view ต่างๆ ในแนวตั้งหรือแนวนอนโดยอัตโนมัติ ไม่ต้องเขียน constraint มากมาย
+Auto Layout ใช้ constraint กำหนดตำแหน่ง/ขนาด view ผ่าน Anchor API; UIStackView จัด view แนวตั้ง/แนวนอนโดยอัตโนมัติ
 
 ### ตัวอย่างสมบูรณ์: Programmatic UI (ไม่ใช้ Storyboard)
 
@@ -832,7 +811,6 @@ class DetailViewController: UIViewController {
     }
 }
 
-// Placeholder VCs
 class SearchViewController: UIViewController {
     override func viewDidLoad() { super.viewDidLoad(); view.backgroundColor = .systemBackground }
 }
@@ -1803,9 +1781,7 @@ class SegmentedPickerDemoViewController: UIViewController {
 
 ---
 
-## สรุป
-
-ในบทนี้เราได้เรียนรู้ UIKit ตั้งแต่พื้นฐานจนถึงระดับกลาง:
+## สรุป: สิ่งที่ได้เรียนในบทนี้
 
 | หัวข้อ | สิ่งที่ได้เรียน |
 |-------|--------------|
@@ -1821,9 +1797,4 @@ class SegmentedPickerDemoViewController: UIViewController {
 | UIKit+SwiftUI | UIViewRepresentable, UIHostingController |
 | Exercises | Notes app, Custom segmented control |
 
-### ขั้นตอนต่อไป
-
-- ศึกษา **UICollectionView List** (iOS 14+) สำหรับ list-style layout
-- เรียนรู้ **UISheetPresentationController** สำหรับ bottom sheet
-- ทดสอบ UI ด้วย **XCTest UI Testing**
-- ศึกษา **Core Animation** สำหรับ animation ขั้นสูง
+**ขั้นตอนต่อไป:** UICollectionView List (iOS 14+), UISheetPresentationController, XCTest UI Testing, Core Animation

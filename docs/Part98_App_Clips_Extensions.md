@@ -1702,36 +1702,20 @@ class AdvancedNotificationService: UNNotificationServiceExtension {
     ) {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 25 // timeout 25 วินาที
-        let session = URLSession(configuration: config)
         
-        let task = session.downloadTask(with: imageURL) { 
+        let task = URLSession(configuration: config).downloadTask(with: imageURL) {
             tempURL, response, error in
             
-            // จัดการ error cases
-            if let error = error {
-                print("Download error: \(error.localizedDescription)")
-                completion(content) // ส่ง content โดยไม่มีรูปภาพ
-                return
+            guard error == nil, let tempURL = tempURL else {
+                print("Download error: \(error?.localizedDescription ?? "unknown")")
+                completion(content); return
             }
             
-            guard let tempURL = tempURL else {
-                completion(content)
-                return
-            }
-            
-            // กำหนด file extension จาก Content-Type header
-            let ext: String
-            if let httpResponse = response as? HTTPURLResponse,
-               let contentType = httpResponse.allHeaderFields["Content-Type"] as? String {
-                ext = self.extension(forContentType: contentType)
-            } else {
-                ext = "jpg"
-            }
-            
-            // ย้ายไฟล์ไปยัง permanent location
-            let permanentURL = tempURL
-                .deletingPathExtension()
-                .appendingPathExtension(ext)
+            // กำหนด extension จาก Content-Type
+            let mimeType = (response as? HTTPURLResponse)?
+                .allHeaderFields["Content-Type"] as? String ?? "image/jpeg"
+            let ext = mimeType.contains("png") ? "png" : mimeType.contains("gif") ? "gif" : "jpg"
+            let permanentURL = tempURL.deletingPathExtension().appendingPathExtension(ext)
             
             do {
                 if FileManager.default.fileExists(atPath: permanentURL.path) {
@@ -1739,46 +1723,21 @@ class AdvancedNotificationService: UNNotificationServiceExtension {
                 }
                 try FileManager.default.moveItem(at: tempURL, to: permanentURL)
                 
-                // Validate image file size (ไม่เกิน 10MB สำหรับ notification)
-                let fileSize = try permanentURL.resourceValues(
-                    forKeys: [.fileSizeKey]
-                ).fileSize ?? 0
+                // ตรวจสอบขนาดไฟล์ (ไม่เกิน 10MB)
+                let fileSize = (try? permanentURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                guard fileSize < 10 * 1024 * 1024 else { completion(content); return }
                 
-                guard fileSize < 10 * 1024 * 1024 else {
-                    print("รูปภาพใหญ่เกินไป: \(fileSize) bytes")
-                    completion(content)
-                    return
-                }
-                
-                // สร้าง attachment
-                let attachment = try UNNotificationAttachment(
-                    identifier: UUID().uuidString,
-                    url: permanentURL,
-                    options: nil
-                )
-                
-                content.attachments = [attachment]
+                content.attachments = [try UNNotificationAttachment(
+                    identifier: UUID().uuidString, url: permanentURL, options: nil
+                )]
                 completion(content)
-                
             } catch {
-                print("Attachment error: \(error)")
-                completion(content)
+                print("Attachment error: \(error)"); completion(content)
             }
         }
         
         self.downloadTask = task
         task.resume()
-    }
-    
-    private func `extension`(forContentType contentType: String) -> String {
-        if contentType.contains("jpeg") || contentType.contains("jpg") {
-            return "jpg"
-        } else if contentType.contains("png") {
-            return "png"
-        } else if contentType.contains("gif") {
-            return "gif"
-        }
-        return "jpg"
     }
     
     // เรียกเมื่อใกล้หมดเวลา
